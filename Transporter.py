@@ -28,14 +28,16 @@ error = 0
 integral = 0
 
 
-redDetected = 0
-greenDetected = 0;
+redDetected = 0       #Flagi pomocnicze do skrecania na kolorowe pola
+redDetected2 = 0
+greenDetected = 0
 transporting = 0
 objLifted = 0
-objDetected = 0;
+objDetected = 0
+
 lastColor = 42
 
-def steering(correction, power):
+def steering(correction, power):      #Funkcja sterująca
 	power_left = power_right = power
 	s = (50 - abs(float(correction))) / 50
 
@@ -54,77 +56,83 @@ print(ir.value())
 lm.run_direct()
 rm.run_direct()
 while not ts.value():
-	colRed = cl2.value(0)
-	colGreen = cl2.value(1)
-	colBlue = cl2.value(2)
 
-	"""Sekwencja skrecania na czerwonym do odebrania obiektu"""
-	if(colRed >= 260 and colGreen < 70 and colBlue < 40 and redDetected == 0 and transporting == 0):
-		sleep(0.5)
+	"""Sekwencja skrecania na zielonym do odebrania obiektu"""
+	if(cl2.value() < 100 and cl2.value(1) >= 120 and cl2.value(2) < 100 and greenDetected == 0 and transporting == 0):
+		sleep(1.2)
 		lm.run_to_rel_pos(position_sp = 270, speed_sp = 100, stop_action = "hold")
 		rm.run_to_rel_pos(position_sp = -270, speed_sp = 100, stop_action = "hold")
-		sleep(0.5)
-		lm.run_to_rel_pos(position_sp = 200, speed_sp = 100, stop_action = "hold")
-		rm.run_to_rel_pos(position_sp = 200, speed_sp = 100, stop_action = "hold")
-		sleep(0.5)
-		redDetected = 1
+		sleep(5)
+		lm.run_to_rel_pos(position_sp = 130, speed_sp = 100, stop_action = "hold")
+		rm.run_to_rel_pos(position_sp = 130, speed_sp = 100, stop_action = "hold")
+		sleep(4)
+		greenDetected = 1
+		print("SKRET_zielony")
 
-	"""Sekwencja podnoszenia obiektu na czerwonym polu"""
-	if(colRed >= 260 and colGreen < 70 and colBlue < 40 and redDetected == 1):
+	"""Sekwencja podnoszenia obiektu na zielonym polu"""
+	if(cl2.value() < 100 and cl2.value(1) >= 120 and cl2.value(2) < 100 and greenDetected == 1 and transporting == 0 and transporting == 0 and objLifted == 0):
 		lm.stop()
 		rm.stop()
 		sleep(1)
-		lm.run_forever(speed_sp = 100)
-		rm.run_forever(speed_sp = -100)
+		while(ir.value() > 18):
+			lm.run_forever(speed_sp = 100)
+			rm.run_forever(speed_sp = 100)
 
 		"""Podnoszenie obiektu"""
-		if(ir.value() < 18 and objLifted == 0 and ir.value() > 0 and redDetected == 1):
-			lm.stop()
-			rm.stop()
-			sleep(2)
-			sm.run_to_rel_pos(position_sp = -200, speed_sp = 800, stop_action = "hold")
-			objLifted = 1
-			objDetected = 1
-			sleep(2)
-			lm.run_to_rel_pos(position_sp = 360, speed_sp = 200, stop_action = "hold")
-			rm.run_to_rel_pos(position_sp = -360, speed_sp = 200, stop_action = "hold")
-			sleep(1)
-			lm.run_to_rel_pos(position_sp = 360, speed_sp = 200, stop_action = "hold")
-			rm.run_to_rel_pos(position_sp = 360, speed_sp = 200, stop_action = "hold")
-			redDetected = 0
-			"""
-			while(colRed > 60 or colGren > 60 or colBlue > 70):
-				lm.run_forever(speed_sp = 100)
-				rm.run_forever(speed_sp = -100)
-				lm.stop()
-				rm.stop()
-				"""
+		lm.stop()
+		rm.stop()
+		sleep(1)
+		sm.run_to_rel_pos(position_sp = -200, speed_sp = 800, stop_action = "hold")
+		objLifted = 1
+		objDetected = 1
+		sleep(2)
+		lm.run_to_rel_pos(position_sp = 560, speed_sp = 200, stop_action = "hold")
+		rm.run_to_rel_pos(position_sp = -560, speed_sp = 200, stop_action = "hold")
+		sleep(5)
+		lm.run_to_rel_pos(position_sp = 100, speed_sp = 100, stop_action = "hold")
+		rm.run_to_rel_pos(position_sp = 100, speed_sp = 100, stop_action = "hold")
+		greenDetected = 0
+		transporting = 1
 
-	"""Detekcja zielonego i sekwencja skretu"""
-	if(colRed < 60 and colGren >= 150 and colBlue < 70 and transporting == 1):
-		sleep(0.2)
-		lm.run_to_rel_pos(position_sp = -245, speed_sp = 100, stop_action = "hold")
-		rm.run_to_rel_pos(position_sp = 245, speed_sp = 100, stop_action = "hold")
+
+	"""Detekcja czerwonego i sekwencja skretu"""
+	if(cl2.value(0) >= 200 and cl2.value(1) < 100 and cl2.value(2) < 100 and transporting == 1 and redDetected == 0):
+		sleep(1)
+		lm.run_to_rel_pos(position_sp = 270, speed_sp = 100, stop_action = "hold")
+		rm.run_to_rel_pos(position_sp = -270, speed_sp = 100, stop_action = "hold")
+		sleep(4)
+		lm.run_to_rel_pos(position_sp = 100, speed_sp = 200, stop_action = "hold")
+		rm.run_to_rel_pos(position_sp = 100, speed_sp = 200, stop_action = "hold")
 		sleep(2)
-		lm.run_to_rel_pos(position_sp = 200, speed_sp = 200, stop_action = "hold")
-		rm.run_to_rel_pos(position_sp = 200, speed_sp = 200, stop_action = "hold")
-		sleep(2)
-		greenDetected = 1
+		redDetected = 1
 
 	"""Sekwencja odkladania obiektu i wycofania sie na linie"""
-	if(colRed < 60 and colGren >= 150 and colBlue < 70 and greenDetected == 1):
+	if(cl2.value(0) >= 200 and cl2.value(1) < 100 and cl2.value(2) < 100 and redDetected == 1):
 		sleep(1)
 		lm.stop()
 		rm.stop()
 		sm.run_to_rel_pos(position_sp = 200, speed_sp = 800, stop_action = "hold")
 		sleep(1)
-		lm.run_to_rel_pos(position_sp = -360, speed_sp = 100, stop_action = "hold")
-		rm.run_to_rel_pos(position_sp = -560, speed_sp = 100, stop_action = "hold")
-		sleep(1)
-		lm.run_to_rel_pos(position_sp = -360, speed_sp = 100, stop_action = "hold")
-		rm.run_to_rel_pos(position_sp = 360, speed_sp = 100, stop_action = "hold")
-		greenDetected = 0
+		lm.run_to_rel_pos(position_sp = -150, speed_sp = 100, stop_action = "hold")
+		rm.run_to_rel_pos(position_sp = -150, speed_sp = 100, stop_action = "hold")
+		sleep(3)
+		lm.run_to_rel_pos(position_sp = -500, speed_sp = 100, stop_action = "hold")
+		rm.run_to_rel_pos(position_sp = 500, speed_sp = 100, stop_action = "hold")
+		sleep(3)
+		transporting = 0
+		redDetected = 0
+		redDetected2 = 1
 
+	"""Detekcja czerwonego i sekwencja skretu"""
+	if(cl2.value(0) >= 200 and cl2.value(1) < 100 and cl2.value(2) < 100 and redDetected2 == 1):
+		sleep(2)
+		lm.run_to_rel_pos(position_sp = 280, speed_sp = 100, stop_action = "hold")
+		rm.run_to_rel_pos(position_sp = -280, speed_sp = 100, stop_action = "hold")
+		sleep(4)
+		lm.run_to_rel_pos(position_sp = 100, speed_sp = 200, stop_action = "hold")
+		rm.run_to_rel_pos(position_sp = 100, speed_sp = 200, stop_action = "hold")
+		sleep(2)
+		redDetected2 = 0
 
 	lm.run_direct()
 	rm.run_direct()
@@ -133,18 +141,16 @@ while not ts.value():
 	derivative = error - lastError
 	lastError = error
 	integral = 0.5 * integral + error
-	correction = kp * error + kd * derivative + ki*integral
-	if(cl1.value() < 30 and colRed < 50 and colGreen < 60 and colBlue < 40):    #warunek do przejeżdżania przez skrzyżowania
+	correction = kp * error + kd * derivative + ki*integral     #Sterowanie PID
+	if(cl1.value() < 40 and cl2.value(0) < 60 and cl2.value(1) < 70 and cl2.value(2) < 50):    #warunek do przejeżdżania przez skrzyżowania
 		correction = 0;
 	for (motor, pow) in zip((lm, rm), steering(correction, power)):
 		motor.duty_cycle_sp = pow
 
-
-
-
+	print("STOP")
 	sleep(0.01)
-if(ir.value() > 20 and objLifted == 1):
-	sm.run_to_rel_pos(position_sp = 200, speed_sp = 800, stop_action = "hold")
-	podniesiony = 0;
+
+
+
 lm.stop()
 rm.stop()

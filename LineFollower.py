@@ -15,8 +15,8 @@ cl2.mode = 'RGB-RAW'
 ir.mode = 'IR-PROX'
 
 
-power = 30   #dla power 40 jedzie gladko
-target = 30
+power = 30
+target = 30   #wartość zadana dla czujnika światła
 kp = 0.8
 kd = 1.0
 ki = 0.2
@@ -27,15 +27,7 @@ lastError = 0
 error = 0
 integral = 0
 
-
-redDetected = 0
-greenDetected = 0;
-transporting = 0
-objLifted = 0
-objDetected = 0;
-lastColor = 42
-
-def steering(correction, power):
+def steering(correction, power):    # Funkcja sterowania silnikami robota
 	power_left = power_right = power
 	s = (50 - abs(float(correction))) / 50
 
@@ -54,28 +46,22 @@ print(ir.value())
 lm.run_direct()
 rm.run_direct()
 while not ts.value():
-	colRed = cl2.value(0)
+	colRed = cl2.value(0)          #Odczyty czujnika dla kolorów kolejno czeronego, zielonego i niebieskiego
 	colGreen = cl2.value(1)
 	colBlue = cl2.value(2)
 	lm.run_direct()
 	rm.run_direct()
 	clRead = cl1.value()
-	error = target - (100 * (clRead - minRead)/(maxRead - minRead))
+	error = target - (100 * (clRead - minRead)/(maxRead - minRead)) #różnica między wartością zadaną a wartością średnią
 	derivative = error - lastError
 	lastError = error
 	integral = 0.5 * integral + error
-	correction = kp * error + kd * derivative + ki*integral
+	correction = kp * error + kd * derivative + ki * integral    #Regulator PID
 	if(cl1.value() < 30 and colRed < 50 and colGreen < 60 and colBlue < 40):    #warunek do przejeżdżania przez skrzyżowania
 		correction = 0;
-	for (motor, pow) in zip((lm, rm), steering(correction, power)):
+	for (motor, pow) in zip((lm, rm), steering(correction, power)):   #Przekazanie korekcy sterowania
 		motor.duty_cycle_sp = pow
-
-
-
-
 	sleep(0.01)
-if(ir.value() > 20 and objLifted == 1):
-	sm.run_to_rel_pos(position_sp = 200, speed_sp = 800, stop_action = "hold")
-	podniesiony = 0;
+
 lm.stop()
 rm.stop()
